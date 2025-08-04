@@ -1,231 +1,145 @@
 <template>
-  <div class="app-container">
-    <h1>🎬 Gestionnaire de Films</h1>
+  <main class="container">
+    <article class="todo-app">
+      <header>
+        <h1>📝 Ma To-Do List</h1>
+        <p class="description">Gérez vos tâches avec élégance et simplicité.</p>
+      </header>
 
-    <p :class="{ active: count > 5 }">Compteur : {{ count }}</p>
+      <form @submit.prevent="addTodo" class="todo-form">
+        <input
+          type="text"
+          placeholder="Ajouter une tâche..."
+          v-model="todoName"
+        />
+        <button :disabled="todoName.length === 0" type="submit">Ajouter</button>
+      </form>
 
-    <div class="buttons">
-      <button @click="increment">➕</button>
-      <button @click="decrement">➖</button>
-      <button @click="sortMovies">🔀 Trier</button>
-    </div>
+      <label class="checkbox-line">
+        <input type="checkbox" v-model="hideCompleted" />
+        Masquer les tâches complétées
+      </label>
 
-    <form @submit.prevent="addMovie" class="movie-form">
-      <input
-        type="text"
-        placeholder="Ajouter un film..."
-        v-model="movieName"
-      />
-      <button type="submit">Ajouter</button>
-    </form>
+      <section v-if="todos.length === 0" class="empty">
+        🎉 Vous n'avez aucune tâche en attente !
+      </section>
 
-    <div class="message" :class="{ positive: count >= 5, negative: count < 5 }">
-      {{ count >= 5
-        ? '👏 Bravo ! Vous avez cliqué plus que 5 fois !'
-        : '💡 Vous avez cliqué moins de 5 fois.' }}
-    </div>
-
-    <ul class="movie-list">
-      <li v-for="movie in movies" :key="movie">
-        <span>{{ movie }}</span>
-        <button class="delete-btn" @click="deleteMovie(movie)">🗑️</button>
-      </li>
-    </ul>
-  </div>
-  <div class="highlight-box">
-  <h2>🎬 Acteur de la semaine</h2>
-  <ul>
-    <li><strong>Nom :</strong> {{ person.lastName }}</li>
-    <li><strong>Âge :</strong> {{ person.age }}</li>
-  </ul>
-  <button @click.prevent="randomAge" class="highlight-button">Changer l'âge</button>
-</div>
-
-
-
+      <ul v-else class="todo-list">
+        <li
+          v-for="todo in sortTodos()"
+          :key="todo.date"
+          :class="{ completed: todo.completed }"
+        >
+          <label class="todo-item">
+            <input type="checkbox" v-model="todo.completed" />
+            <span>{{ todo.title }}</span>
+          </label>
+        </li>
+      </ul>
+    </article>
+  </main>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 
-const count = ref(0)
-const increment = () => count.value++
-const decrement = () => count.value--
+const todoName = ref('')
+const hideCompleted = ref(false)
 
-const movies = ref(['TITANIC', 'MATRIX', 'GRAGE'])
+const todos = ref([
+  { title: 'Faire les courses', completed: true, date: 1 },
+  { title: 'Apprendre Vue 3', completed: false, date: 2 },
+  { title: 'Boire un café ☕', completed: false, date: 3 }
+])
 
-const movieName = ref('')
-
-const sortMovies = () => {
-  movies.value.sort((a, b) => a.localeCompare(b))
-}
-
-const addMovie = () => {
-  if (movieName.value.trim()) {
-    movies.value.push(movieName.value.trim())
-    movieName.value = ''
-    sortMovies()
+const addTodo = () => {
+  if (todoName.value.trim()) {
+    todos.value.push({
+      title: todoName.value.trim(),
+      completed: false,
+      date: Date.now()
+    })
+    todoName.value = ''
   }
 }
 
-const deleteMovie = (movie) => {
-  movies.value = movies.value.filter((m) => m !== movie)
-}
-
-const person = ref({
-  firstName : 'John',
-  lastName: 'Doe',
-  age: 10
-})
-
-const randomAge = () => {
-  person.value.age = Math.round(Math.random() * 100)
+const sortTodos = () => {
+  const sorted = todos.value.toSorted((a, b) => a.completed - b.completed)
+  return hideCompleted.value ? sorted.filter(t => !t.completed) : sorted
 }
 </script>
 
 <style scoped>
-.app-container {
+.todo-app {
   max-width: 600px;
-  margin: 40px auto;
-  padding: 24px;
-  background: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  font-family: "Segoe UI", sans-serif;
-  color: #333;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: 1rem;
+  background: var(--pico-background-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-h1 {
+header {
   text-align: center;
-  color: #2c3e50;
-  margin-bottom: 24px;
+  margin-bottom: 2rem;
 }
 
-.buttons {
+.description {
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.todo-form {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-button {
-  background-color: #3498db;
-  border: none;
-  color: white;
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button:hover {
-  background-color: #2980b9;
-}
-
-button.delete-btn {
-  background-color: #e74c3c;
-  padding: 6px 10px;
-}
-
-button.delete-btn:hover {
-  background-color: #c0392b;
-}
-
-.movie-form {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.movie-form input {
+.todo-form input {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
 }
 
-.movie-list {
-  list-style: none;
-  padding: 0;
-}
-
-.movie-list li {
-  background: #fff;
-  margin-bottom: 10px;
-  padding: 10px 14px;
-  border-radius: 8px;
+.checkbox-line {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.active {
-  color: green;
-  font-weight: bold;
-}
-
-.message {
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: bold;
-}
-
-.message.positive {
-  color: green;
-}
-
-.message.negative {
-  color: #e67e22;
-}
-
-
-.highlight-box {
-  background-color: #fffbe6;
-  border: 1px solid #f1c40f;
-  padding: 20px;
-  margin: 40px auto 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(241, 196, 15, 0.2);
-  max-width: 600px;
-  text-align: left;
-}
-
-.highlight-box h2 {
-  margin-top: 0;
-  color: #d4ac0d;
-  text-align: center;
-}
-
-.highlight-box ul {
+.todo-list {
   list-style: none;
   padding: 0;
-  margin: 10px 0 20px 0;
+  margin: 0;
 }
 
-.highlight-box li {
-  margin-bottom: 8px;
-  font-size: 16px;
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--pico-muted-color);
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
 }
 
-.highlight-box li strong {
-  color: #333;
+.todo-item:hover {
+  background: var(--pico-muted-border-color);
 }
 
-.highlight-button {
-  background-color: #f39c12;
-  color: white;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: block;
-  margin: 0 auto;
-  transition: background-color 0.2s;
+.completed span {
+  text-decoration: line-through;
+  opacity: 0.5;
 }
 
-.highlight-button:hover {
-  background-color: #e67e22;
+.empty {
+  text-align: center;
+  padding: 2rem 0;
+  font-style: italic;
+  color: #777;
+  background: var(--pico-muted-color);
+  border-radius: 0.75rem;
 }
-
 </style>
