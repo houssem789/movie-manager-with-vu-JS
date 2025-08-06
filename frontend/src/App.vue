@@ -6,6 +6,8 @@
         <p class="description">Gérez vos tâches avec élégance et simplicité.</p>
       </header>
 
+
+      
       <form @submit.prevent="addTodo" class="todo-form">
         <input
           type="text"
@@ -15,10 +17,15 @@
         <button :disabled="todoName.length === 0" type="submit">Ajouter</button>
       </form>
 
-      <label class="checkbox-line">
+      <!-- <label class="checkbox-line">
         <input type="checkbox" v-model="hideCompleted" />
         Masquer les tâches complétées
-      </label>
+      </label> -->
+      <Checkbox
+       v-model="hideCompleted" 
+       label="Masquer les tâches complétées"
+      />
+
 
       <section v-if="todos.length === 0" class="empty">
         🎉 Vous n'avez aucune tâche en attente !
@@ -42,6 +49,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import Checkbox from './Checkbox.vue'
+import Button from './Button.vue'
 
 const todoName = ref('')
 const hideCompleted = ref(false)
